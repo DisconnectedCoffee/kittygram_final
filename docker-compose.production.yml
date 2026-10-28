@@ -1,0 +1,41 @@
+version: '3.8'
+
+volumes:
+  pg_data:
+  static:
+  media:
+
+services:
+  db:
+    image: postgres:13
+    volumes:
+      - pg_data:/var/lib/postgresql/data/
+    env_file:
+      - .env
+
+  backend:
+    image: muffinthegreat/kittygram_backend:latest
+    volumes:
+      - static:/app/static/
+      - media:/app/media/
+    depends_on:
+      - db
+    env_file:
+      - .env
+
+  frontend:
+    image: muffinthegreat/kittygram_frontend:latest
+    volumes:
+      - static:/app/result_static/
+    command: cp -r /app/build/. /app/result_static/
+
+  gateway:
+    image: muffinthegreat/kittygram_gateway:latest
+    ports:
+      - "80:80"
+    volumes:
+      - static:/usr/share/nginx/html/
+      - media:/app/media/
+    depends_on:
+      - backend
+      - frontend
